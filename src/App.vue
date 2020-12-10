@@ -1,12 +1,18 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <gantt/>
   </div>
 </template>
+
+
+<script>
+import Gantt from "./components/Gantt";
+
+export default {
+  components: { Gantt },
+  name: "App"
+};
+</script>
 
 <style lang="scss">
 #app {
@@ -15,6 +21,7 @@
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  height: 100%;
 }
 
 #nav {
