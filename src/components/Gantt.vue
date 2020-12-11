@@ -102,6 +102,7 @@ export default {
           unit_width: 50,
           cell_height: 50,
           temple : "",
+          conflict : "",
           scales : [
               { 
                   unit: "hour",
@@ -268,10 +269,10 @@ export default {
             for(var u = 0; u < cols.length; u++) {
               var col = cols[u];
 
-              if(col == disabled.start) {
+              if(col.label == disabled.start) {
                 is = 1;
                 disabled.left = u*self.config.gantt.unit_width;
-              } else if (col == disabled.end && is){
+              } else if (col.label == disabled.end && is){
                 break;
               } 
 
