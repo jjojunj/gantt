@@ -217,6 +217,10 @@ export default {
               var gantt_right = document.getElementsByClassName("gantt_right")[0];
               var scrollLeft = gantt_right.scrollLeft;
               var scrollTop = gantt_right.scrollTop;
+              var gantt_content_th_contrainer = document.getElementsByClassName("gantt_content_th_contrainer")[0];
+              if(e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX <= 0 || e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX + self.boxElement.width.baseVal.value >=gantt_content_th_contrainer.clientWidth) {
+                return;
+              }
               self.boxElement.x.baseVal.value = e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX;
               //self.boxElement.y.baseVal.value = e.clientY - gantt_right.offsetTop + scrollTop + self.boxY;
             }
