@@ -1,5 +1,7 @@
 <template>
+
   <div class="gantt_container" ref="gantt_container" :style = "{background: background, color: color}">
+    <button type="button" @click="loadTime()" style="float:left;position: absolute;z-index:9999;">普通按钮</button>
     <div class="gantt_left gantt_layout_content gantt_inline_block" ref="gantt_left" >
       <div class="gantt_left_container">
         <div class="gantt_layout_header gantt_inline_block" :style="{height:unit_height*config.gantt.scales.length + 'px'}">
@@ -11,7 +13,7 @@
         </div>
         <div class="gantt_table_content" :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
           <template v-for="(data, index) in datas">
-            <div class="gantt_table_row gantt_data_row" :style="{height:unit_height + 'px', lineHeight: unit_height + 'px', color:content_color}" :row_index="JSON.stringify(index)" v-bind:class="{ gantt_table_row_hover: hover_index == index }">
+            <div class="gantt_table_row gantt_data_row" :style="{height:data.y + 'px', lineHeight: data.y + 'px', color:content_color}" :row_index="JSON.stringify(index)" v-bind:class="{ gantt_table_row_hover: hover_index == index }">
               <div class="gantt_table_cell"  v-for="(col,index) in config.cols" :style="{width:col.width + 'px'}" >{{data[col.field]}}</div>
             </div>
           </template>
@@ -30,7 +32,7 @@
         <div class="gantt_right_table_container" :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
           <div class="gantt_table_content"  :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
             <template v-for="(data, index) in datas">
-              <div class="gantt_table_row"  :style="{height:unit_height + 'px', lineHeight: unit_height + 'px'}" v-bind:class="{ gantt_table_row_hover: hover_index == index }"></div>
+              <div class="gantt_table_row"  :style="{height:data.y + 'px', lineHeight: data.y + 'px'}" v-bind:class="{ gantt_table_row_hover: hover_index == index }"></div>
             </template>
           </div>
           <svg version="1.1" class="ganttSVGBoxX" >
@@ -45,15 +47,15 @@
           </svg>
           <svg version="1.1" class="ganttSVGBox" >
             <template v-for="(data, index) in datas">
-              <template v-for="time in timeDatas[data[config.mapping.mapping_field]]">
-                <svg :x="JSON.stringify(time.left)" :mapping_value="data[config.mapping.mapping_field]"  
-                  :y="JSON.stringify(index*30+1)" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
-                  class="taskBox deSVGdrag taskBoxSVG" status="STATUS_ACTIVE" taskid="-1" :style="{fill: box_background}">
+                <svg v-for="time in timeDatas[data[config.mapping.mapping_field]]" :mapping_value="data[config.mapping.mapping_field]"  
+                  :x="JSON.stringify(time.left)" 
+                  :y="JSON.stringify(time.y = time.y ? time.y+1 : 1 )" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
+                  class="taskBox deSVGdrag taskBoxSVG" status="STATUS_ACTIVE" taskid="-1" :style="{fill: box_background}"
+                  :name="'svg' + time[config.mapping.key_field]">
                   <rect x="0" y="0" width="100%" height="100%" class="taskLayout" rx="2" ry="2"></rect>
                   <rect x="0" y="0" width="100%" height="3" :style="{fill:box_background}"></rect>
-                  <text x="30%" y="24" class="taskLabelSVG" :style="{fill:box_color}" transform="translate(20,-5)">Gantt editor</text>
+                  <text x="30%" y="24" class="taskLabelSVG" :style="{fill:box_color}" transform="translate(20,-5)">{{data[config.gantt.template] + time.id}}</text>
                 </svg>
-              </template>
             </template>
           </svg>
         </div>
@@ -101,7 +103,7 @@ export default {
           end: new Date("2020-12-11 00:00"),
           unit_width: 50,
           cell_height: 50,
-          temple : "",
+          template : "vehicle_name",
           conflict : "",
           scales : [
               { 
@@ -134,12 +136,13 @@ export default {
         {vehicle_name: "王五", mobile: "13566477736"},
         {vehicle_name: "赵六", mobile: "13566477736"}
       ], timeDatas : {
-        "张三" : [{id : 1, begin_time : new Date("2020-12-10 20:00"), end_time: new Date("2020-12-10 21:40")}
-              , {id : 2, begin_time : new Date("2020-12-10 08:00"), end_time: new Date("2020-12-10 09:40")}],
-        "李四" : [{id : 3, begin_time : new Date("2020-12-10 9:00"), end_time: new Date("2020-12-10 9:30")},
-                {id: 4, begin_time : new Date("2020-12-10 9:30"), end_time: new Date("2020-12-10 10:30")}],
-        "王五" : [{id: 5, begin_time : new Date("2020-12-10 8:10"), end_time: new Date("2020-12-10 8:40")}],
-        "赵六" : [{id: 6, begin_time : new Date("2020-12-10 10:00"), end_time: new Date("2020-12-10 10:40")}],
+        "张三" : [{id : 10, begin_time : new Date("2020-12-10 20:00"), end_time: new Date("2020-12-10 21:40")}
+              , {id : 20, begin_time : new Date("2020-12-10 08:00"), end_time: new Date("2020-12-10 09:40")}],
+        "李四" : [{id : 30, begin_time : new Date("2020-12-10 8:35"), end_time: new Date("2020-12-10 9:10")},
+                {id: 40, begin_time : new Date("2020-12-10 9:00"), end_time: new Date("2020-12-10 10:30")},
+                {id: 50, begin_time : new Date("2020-12-10 9:10"), end_time: new Date("2020-12-10 10:30")}],
+        "王五" : [{id: 60, begin_time : new Date("2020-12-10 8:10"), end_time: new Date("2020-12-10 8:40")}],
+        "赵六" : [{id: 70, begin_time : new Date("2020-12-10 10:00"), end_time: new Date("2020-12-10 10:40")}],
       }
     }
   }, 
@@ -159,34 +162,67 @@ export default {
 
     this.bindDocumentUp();//加载document鼠标放开事件
   },
+  updated(){
+    debugger;
+  },
   methods : {
     bindDocumentUp : function() {
       var self = this;
       document.body.onmouseup = function() {
         if(self.isboxDown) {
-          var width = self.boxElement.width.baseVal.value;
-          var x = self.boxElement.x.baseVal.value;
-          var xx = x%self.config.gantt.unit_width;
-          var xxx = parseInt(x/self.config.gantt.unit_width);
-          var left = 0;
-          if(xx > parseInt(self.config.gantt.unit_width/2)) {
-            xxx++;
-          } 
           //begin 同步时间
-          var start = self.config.gantt.cols[self.config.gantt.cols.length - 1][xxx].start;
-          var mapping_value = self.boxElement.getAttribute("mapping_value");
-          var key_value = self.boxElement.getAttribute("key_value");
-          self.timeDatas[mapping_value].forEach(time => {
-            var timestart = time[self.config.mapping.start_field];
-            time[self.config.mapping.end_field] = new Date(time[self.config.mapping.end_field].getTime() + (start.getTime()  - time[self.config.mapping.start_field].getTime()));
-            time[self.config.mapping.start_field] = start;
+          self.timeDatas['李四'].forEach(d => {
+            console.log(d.left);
           });
+          self.syncTime();
+          self.timeDatas['李四'].forEach(d => {
+            console.log(d.left);
+          });
+          self.loadTime();
           //end
-          left = xxx*self.config.gantt.unit_width;
-          self.boxElement.x.baseVal.value = left;
+          self.timeDatas['李四'].forEach(d => {
+            console.log(d.left);
+          });
+          
+          debugger;
         }
         self.isboxDown = 0;
       }
+    },
+    syncTime : function() {
+      var self = this;
+      var width = self.boxElement.width.baseVal.value;
+      var x = self.boxElement.x.baseVal.value;
+      var xx = x%self.config.gantt.unit_width;
+      var xxx = parseInt(x/self.config.gantt.unit_width);
+      var left = 0;
+      if(xx > parseInt(self.config.gantt.unit_width/2)) {
+        xxx++;
+      } 
+      left = xxx*self.config.gantt.unit_width;
+      self.boxElement.x.baseVal.value = left;
+
+      var s_width = Math.round(width/self.config.gantt.unit_width);
+      var w_width = width/self.config.gantt.unit_width;
+      var endnum = w_width + xxx - 1;
+      debugger;
+      if(s_width != w_width) {
+        self.boxElement.width.baseVal.value = s_width*self.config.gantt.unit_width;
+        endnum = s_width + xxx - 1;
+      }
+      var end = self.config.gantt.cols[self.config.gantt.cols.length - 1][endnum].end;
+      
+      var start = self.config.gantt.cols[self.config.gantt.cols.length - 1][xxx].start;
+      var mapping_value = self.boxElement.getAttribute("mapping_value");
+      var key_value = self.boxElement.getAttribute("key_value");
+      self.timeDatas[mapping_value].forEach(time => {
+        if(key_value == time[self.config.mapping.key_field]) {
+          var timestart = time[self.config.mapping.start_field];
+          time[self.config.mapping.end_field] = end;
+          time[self.config.mapping.start_field] = start;
+          
+        }
+      });
     },
     bindBoxMove : function() {
       var self = this;
@@ -291,16 +327,51 @@ export default {
       }
     },
     loadTime: function() {
+      console.info("123");
       var startMinute = parseInt(this.config.gantt.start.getTime()/1000/60);
       var self = this;
+      var i = 1;
+      var y = 0;
       self.datas.forEach(data => {
-        self.timeDatas[data[self.config.mapping.mapping_field]].forEach(time => {
+        data.y = 0;
+        var times = self.timeDatas[data[self.config.mapping.mapping_field]];
+        times.sort(function(a,b){
+          return a[self.config.mapping.start_field] < b.[self.config.mapping.start_field] ? -1 : 1;
+        });
+        var timea = 0;
+
+        var step = self.config.gantt.scales[self.config.gantt.scales.length - 1].step;
+        
+        times.forEach(time => {
+          time.left = 0;
+          time.width = 0;
+          time.y = 0;
+
           var start = parseInt(time[self.config.mapping.start_field].getTime()/1000/60);
           var end = parseInt(time[self.config.mapping.end_field].getTime()/1000/60);
-          time.left = (start - startMinute)/5*self.config.gantt.unit_width;
-          time.width = (end - start)/5*self.config.gantt.unit_width;
+          time.left = (start - startMinute)/step*self.config.gantt.unit_width;
+          time.width = (end - start)/step*self.config.gantt.unit_width;
+          debugger;
+          //document.getElementsByName("svg" + time[self.config.mapping.key_field])[0].x.baseVal.value = time.left;
+          if (timea) {
+            if (timea > start) {
+              data.y += self.unit_height;
+              time.y = y;
+              y += self.unit_height;
+            } else {
+              time.y = y - self.unit_height;
+            }
+          } else {
+            data.y = self.unit_height;
+             
+            time.y = y;
+            y += data.y;
+          }
+          timea = end;
         });
+        i++;
       });
+      debugger;
     },
     bindRowHover: function() {
       var self = this;
