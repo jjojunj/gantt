@@ -25,7 +25,7 @@
     </div>
     <div class="gantt_right gantt_layout_content gantt_inline_block" ref="gantt_right">
       <div class="gantt_inline_block">
-        <div class="gantt_content_th_contrainer gantt_inline_block" :style="{width : config.gantt.max_count*config.gantt.unit_width+'px'}">
+        <div class="gantt_content_th_contrainer gantt_inline_block" :style="{width : config.gantt.max_count*config.gantt.unit_width+'px', height: config.gantt.cols.length*unit_height+'px'}">
           <template v-for="(cols, index) in config.gantt.cols">
             <div  :style="{height:unit_height + 'px', lineHeight: unit_height + 'px'}">
               <div class="gantt_content_th gantt_inline_block gantt_content_th_cell" v-bind:class="{gantt_content_th_cell_m: index == 0, gantt_content_th_cell_m2: index == 1 && cindex != 0}"  v-for="(col, cindex) in cols" :style="{width: config.gantt.scales[index].width + 'px'}">{{col.label}}</div>
@@ -35,7 +35,9 @@
         <div class="gantt_right_table_container" :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
           <div class="gantt_table_content"  :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
             <template v-for="(data, index) in datas">
-              <div class="gantt_table_row"  :style="{height:data.y + 'px', lineHeight: data.y + 'px'}" v-bind:class="{ gantt_table_row_hover: hover_index == index }"></div>
+              <div class="gantt_table_row"  :style="{height:data.y + 'px', lineHeight: data.y + 'px'}" v-bind:class="{ gantt_table_row_hover: hover_index == index }">
+                <div class="gantt_content_th gantt_inline_block gantt_content_row_cell" v-for="(col, cindex) in config.gantt.cols[config.gantt.cols.length - 1]" :style="{width: config.gantt.scales[config.gantt.scales.length - 1].width + 'px'}"></div>
+              </div>
             </template>
           </div>
           <svg version="1.1" class="ganttSVGBoxX" >
@@ -194,13 +196,13 @@ export default {
         xxx++;
       } 
       left = xxx*self.config.gantt.unit_width;
-      self.boxElement.x.baseVal.value = left;
+      self.boxElement.x.baseVal.value = left+1;
 
       var s_width = Math.round(width/self.config.gantt.unit_width);
       var w_width = width/self.config.gantt.unit_width;
       var endnum = w_width + xxx - 1;
       if(s_width != w_width) {
-        self.boxElement.width.baseVal.value = s_width*self.config.gantt.unit_width;
+        self.boxElement.width.baseVal.value = s_width*self.config.gantt.unit_width - 1;
         endnum = s_width + xxx - 1;
       }
       var end = self.config.gantt.cols[self.config.gantt.cols.length - 1][endnum].end;
@@ -341,8 +343,8 @@ export default {
 
           var start = parseInt(time[self.config.mapping.start_field].getTime()/1000/60);
           var end = parseInt(time[self.config.mapping.end_field].getTime()/1000/60);
-          time.left = (start - startMinute)/step*self.config.gantt.unit_width;
-          time.width = (end - start)/step*self.config.gantt.unit_width;
+          time.left = (start - startMinute)/step*self.config.gantt.unit_width+1;
+          time.width = (end - start)/step*self.config.gantt.unit_width -1;
           //document.getElementsByName("svg" + time[self.config.mapping.key_field])[0].x.baseVal.value = time.left;
           if (timea) {
             if (timea > start) {
@@ -534,6 +536,8 @@ export default {
 .gantt_content_th_contrainer{
     width:100%;
     float: left;
+    overflow-y: hidden;
+    border-bottom: 1px solid #e0e6ed;
 }
 
 .gantt_content_th_cell{
@@ -542,6 +546,14 @@ export default {
     border-bottom: 3px solid #e0e6ed;
     box-sizing: border-box;
     position: relative;
+}
+
+.gantt_content_row_cell{
+    float:left;
+    border-left: 1px solid #e0e6ed;
+    box-sizing: border-box;
+    position: relative;
+    height: 100%;
 }
 
 .gantt_content_th_cell_m:before {
