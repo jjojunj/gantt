@@ -1,7 +1,10 @@
 <template>
-
-  <div class="gantt_container" ref="gantt_container" :style = "{background: background, color: color}">
+<div style="width:100%;height: 100%;position: relative;">
+  <div style="width:100%;height:30px;position: relative;">
     <button type="button" @click="loadTime()" style="float:left;position: absolute;z-index:9999;">普通按钮</button>
+  </div>
+  <div class="gantt_container" ref="gantt_container" :style = "{background: background, color: color}">
+    
     <div class="gantt_left gantt_layout_content gantt_inline_block" ref="gantt_left" >
       <div class="gantt_left_container">
         <div class="gantt_layout_header gantt_inline_block" :style="{height:unit_height*config.gantt.scales.length + 'px'}">
@@ -25,7 +28,7 @@
         <div class="gantt_content_th_contrainer gantt_inline_block" :style="{width : config.gantt.max_count*config.gantt.unit_width+'px'}">
           <template v-for="(cols, index) in config.gantt.cols">
             <div  :style="{height:unit_height + 'px', lineHeight: unit_height + 'px'}">
-              <div class="gantt_content_th gantt_inline_block gantt_content_th_cell"  v-for="col in cols" :style="{width: config.gantt.scales[index].width + 'px'}">{{col.label}}</div>
+              <div class="gantt_content_th gantt_inline_block gantt_content_th_cell" v-bind:class="{gantt_content_th_cell_m: index == 0, gantt_content_th_cell_m2: index == 1 && cindex != 0}"  v-for="(col, cindex) in cols" :style="{width: config.gantt.scales[index].width + 'px'}">{{col.label}}</div>
             </div>
           </template>
         </div>
@@ -46,15 +49,16 @@
             </template>
           </svg>
           <svg version="1.1" class="ganttSVGBox" >
-            <template v-for="(data, index) in datas">
-                <svg v-for="time in timeDatas[data[config.mapping.mapping_field]]" :mapping_value="data[config.mapping.mapping_field]"  
+            <template v-for="(data) in datas">
+                <svg v-for="(time, index) in timeDatas[data[config.mapping.mapping_field]]" :key="time[config.mapping.key_field]" :mapping_value="data[config.mapping.mapping_field]"  
                   :x="JSON.stringify(time.left)" 
-                  :y="JSON.stringify(time.y = time.y ? time.y+1 : 1 )" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
+                  :y="JSON.stringify(time.y = time.y ? time.y+0.5 : 1 )" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
                   class="taskBox deSVGdrag taskBoxSVG" status="STATUS_ACTIVE" taskid="-1" :style="{fill: box_background}"
                   :name="'svg' + time[config.mapping.key_field]">
                   <rect x="0" y="0" width="100%" height="100%" class="taskLayout" rx="2" ry="2"></rect>
                   <rect x="0" y="0" width="100%" height="3" :style="{fill:box_background}"></rect>
-                  <text x="30%" y="24" class="taskLabelSVG" :style="{fill:box_color}" transform="translate(20,-5)">{{data[config.gantt.template] + time.id}}</text>
+                  <text x="45%" y="24" class="taskLabelSVG" text-anchor="middle" :style="{fill:box_color}" transform="translate(20,-5)">{{data[config.gantt.template]}}</text>
+                  <text x="45%" y="44" class="taskLabelSVG" text-anchor="middle" :style="{fill:box_color}" transform="translate(20,-5)">{{dateFormat(time[config.mapping.start_field], 'HH:MM') + '-' + dateFormat(time[config.mapping.end_field], 'HH:MM')}}</text>
                 </svg>
             </template>
           </svg>
@@ -62,6 +66,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -78,7 +83,7 @@ export default {
       page_width: 0,
       isboxDown: 0,
       direction: 0,
-      unit_height:30,
+      unit_height:50,
       boxElement: null,
       boxX: 0,
       boxY: 0,
@@ -109,12 +114,12 @@ export default {
               { 
                   unit: "hour",
                   step: 1,
-                  width:0
+                  format: "dd号HH点"
               },
               { 
                   unit: "minute",
                   step: 5,
-                  width:0
+                  format: "HH:MM"
               },
               
           ],
@@ -171,20 +176,9 @@ export default {
       document.body.onmouseup = function() {
         if(self.isboxDown) {
           //begin 同步时间
-          self.timeDatas['李四'].forEach(d => {
-            console.log(d.left);
-          });
           self.syncTime();
-          self.timeDatas['李四'].forEach(d => {
-            console.log(d.left);
-          });
           self.loadTime();
           //end
-          self.timeDatas['李四'].forEach(d => {
-            console.log(d.left);
-          });
-          
-          debugger;
         }
         self.isboxDown = 0;
       }
@@ -205,7 +199,6 @@ export default {
       var s_width = Math.round(width/self.config.gantt.unit_width);
       var w_width = width/self.config.gantt.unit_width;
       var endnum = w_width + xxx - 1;
-      debugger;
       if(s_width != w_width) {
         self.boxElement.width.baseVal.value = s_width*self.config.gantt.unit_width;
         endnum = s_width + xxx - 1;
@@ -327,7 +320,6 @@ export default {
       }
     },
     loadTime: function() {
-      console.info("123");
       var startMinute = parseInt(this.config.gantt.start.getTime()/1000/60);
       var self = this;
       var i = 1;
@@ -351,7 +343,6 @@ export default {
           var end = parseInt(time[self.config.mapping.end_field].getTime()/1000/60);
           time.left = (start - startMinute)/step*self.config.gantt.unit_width;
           time.width = (end - start)/step*self.config.gantt.unit_width;
-          debugger;
           //document.getElementsByName("svg" + time[self.config.mapping.key_field])[0].x.baseVal.value = time.left;
           if (timea) {
             if (timea > start) {
@@ -404,7 +395,6 @@ export default {
         var format = scale.format;
         var startTime = self.config.gantt.start.getTime();
         if (unit == "minute") {
-            format = format?format:"HH:MM";
             var count = parseInt(minute/step);
             if(count > self.config.gantt.max_count) {
               self.config.gantt.max_count = count;
@@ -420,7 +410,6 @@ export default {
             scale.minute = step;
             
         } else if (unit == "hour") {
-          format = format?format:"dd号HH点";
             var count = parseInt(minute/(step*60));
             if(count > self.config.gantt.max_count) {
               self.config.gantt.max_count = count;
@@ -480,11 +469,12 @@ export default {
 <style scoped lang="scss">
 *{padding:0px;margin:0px;box-sizing: border-box;}
 .gantt_container{
-  height:100%;
+  top: 30px;
+  bottom: 0px;
   width:100%;
   font-size: 13px;
   border: 1px solid #e0e6ed;
-  position: relative;
+  position: absolute;
   white-space: nowrap;
 
   font-family: Arial;
@@ -544,14 +534,38 @@ export default {
 .gantt_content_th_contrainer{
     width:100%;
     float: left;
-    border-bottom: 1px solid #e0e6ed;
 }
 
 .gantt_content_th_cell{
     float:left;
-    border-right: 1px solid #e0e6ed;
-    border-bottom: 1px solid #e0e6ed;
+    //border-right: 1px solid #e0e6ed;
+    border-bottom: 3px solid #e0e6ed;
     box-sizing: border-box;
+    position: relative;
+}
+
+.gantt_content_th_cell_m:before {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 49%;
+    width: 10px;
+    height: 10px;
+    border: 3px solid #ccc;
+    border-radius: 8px;
+    background: #ccc;
+}
+
+.gantt_content_th_cell_m2:before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left:-5.3%;
+    width: 3px;
+    height: 3px;
+    border: 3px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
 }
 .gantt_table_content{
   width:100%;
