@@ -9,15 +9,15 @@
       <div class="gantt_left_container">
         <div class="gantt_layout_header gantt_inline_block" :style="{height:unit_height*config.gantt.scales.length + 'px'}">
           <div :style="{height:unit_height + 'px', lineHeight: unit_height + 'px'}">
-            <div :style="{height:unit_height*config.gantt.scales.length + 'px', lineHeight: unit_height*config.gantt.scales.length + 'px', width:col.width+ 'px'}" class="gantt_layout_th gantt_inline_block" v-for="(col,index) in config.cols">
+            <div :style="{height:unit_height*config.gantt.scales.length + 'px', lineHeight: unit_height*config.gantt.scales.length + 'px', width:col.width+ 'px'}" class="gantt_layout_th gantt_inline_block" v-for="(col,index) in config.cols" :key="index">
               {{col.label}}
             </div>
           </div>
         </div>
         <div class="gantt_table_content" :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
           <template v-for="(data, index) in datas">
-            <div class="gantt_table_row gantt_data_row" :style="{height:data.y + 'px', lineHeight: data.y + 'px', color:content_color}" :row_index="JSON.stringify(index)" v-bind:class="{ gantt_table_row_hover: hover_index == index }">
-              <div class="gantt_table_cell"  v-for="(col,index) in config.cols" :style="{width:col.width + 'px'}" >{{data[col.field]}}</div>
+            <div class="gantt_table_row gantt_data_row" :key="index" :style="{height:data.y + 'px', lineHeight: data.y + 'px', color:content_color}" :row_index="JSON.stringify(index)" v-bind:class="{ gantt_table_row_hover: hover_index == index }">
+              <div class="gantt_table_cell"  v-for="(col,cindex) in config.cols" :key="cindex" :style="{width:col.width + 'px'}" >{{data[col.field]}}</div>
             </div>
           </template>
         </div>
@@ -27,22 +27,23 @@
       <div class="gantt_inline_block">
         <div class="gantt_content_th_contrainer gantt_inline_block" :style="{width : config.gantt.max_count*config.gantt.unit_width+'px', height: config.gantt.cols.length*unit_height+'px'}">
           <template v-for="(cols, index) in config.gantt.cols">
-            <div  :style="{height:unit_height + 'px', lineHeight: unit_height + 'px'}">
-              <div class="gantt_content_th gantt_inline_block gantt_content_th_cell" v-bind:class="{gantt_content_th_cell_m: index == 0, gantt_content_th_cell_m2: index == 1 && cindex != 0}"  v-for="(col, cindex) in cols" :style="{width: config.gantt.scales[index].width + 'px'}">{{col.label}}</div>
+            <div :key="index" :style="{height:unit_height + 'px', lineHeight: unit_height + 'px'}">
+              <div class="gantt_content_th gantt_inline_block gantt_content_th_cell" v-bind:class="{gantt_content_th_cell_m: index == 0, gantt_content_th_cell_m2: index == 1 && cindex != 0}"  v-for="(col, cindex) in cols" :key="cindex" :style="{width: config.gantt.scales[index].width + 'px'}">{{col.label}}</div>
             </div>
           </template>
         </div>
         <div class="gantt_right_table_container" :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
           <div class="gantt_table_content"  :style="{marginTop:unit_height*config.gantt.scales.length + 'px'}">
             <template v-for="(data, index) in datas">
-              <div class="gantt_table_row"  :style="{height:data.y + 'px', lineHeight: data.y + 'px'}" v-bind:class="{ gantt_table_row_hover: hover_index == index }">
-                <div class="gantt_content_th gantt_inline_block gantt_content_row_cell" v-for="(col, cindex) in config.gantt.cols[config.gantt.cols.length - 1]" :style="{width: config.gantt.scales[config.gantt.scales.length - 1].width + 'px'}"></div>
+              <div class="gantt_table_row" :key="index"  :style="{height:data.y + 'px', lineHeight: data.y + 'px'}" v-bind:class="{ gantt_table_row_hover: hover_index == index }">
+                <div class="gantt_content_th gantt_inline_block gantt_content_row_cell" v-for="(col, cindex) in config.gantt.cols[config.gantt.cols.length - 1]" :key="cindex" :style="{width: config.gantt.scales[config.gantt.scales.length - 1].width + 'px'}"></div>
               </div>
             </template>
           </div>
           <svg version="1.1" class="ganttSVGBoxX" >
             <template v-for="(disabled, index) in config.gantt.disabled">
-              <svg :x="JSON.stringify(disabled.left)" y="0" :width="JSON.stringify(disabled.width)" height="100%" status="STATUS_ACTIVE" taskid="-1" >
+              {{typeof(index)}}
+              <svg :x="JSON.stringify(disabled.left)" y="0" :key="index" :width="JSON.stringify(disabled.width)" height="100%" status="STATUS_ACTIVE" taskid="-1" >
                 <linearGradient id="b">
                     <stop offset="0" stop-color="#ccc" stop-opacity="0.5" />
                 </linearGradient>
@@ -52,7 +53,7 @@
           </svg>
           <svg version="1.1" class="ganttSVGBox" >
             <template v-for="(data) in datas">
-                <svg v-for="(time, index) in timeDatas[data[config.mapping.mapping_field]]" :key="time[config.mapping.key_field]" :mapping_value="data[config.mapping.mapping_field]"  
+                <svg v-for="(time) in timeDatas[data[config.mapping.mapping_field]]" :key="time[config.mapping.key_field]" :mapping_value="data[config.mapping.mapping_field]"  
                   :x="JSON.stringify(time.left)" 
                   :y="JSON.stringify(time.y = time.y ? time.y+0.5 : 1 )" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
                   class="taskBox deSVGdrag taskBoxSVG" status="STATUS_ACTIVE" taskid="-1" :style="{fill: box_background}"
@@ -147,9 +148,10 @@ export default {
               , {id : 20, begin_time : new Date("2020-12-10 08:00"), end_time: new Date("2020-12-10 09:40")}],
         "李四" : [{id : 30, begin_time : new Date("2020-12-10 8:35"), end_time: new Date("2020-12-10 9:10")},
                 {id: 40, begin_time : new Date("2020-12-10 9:00"), end_time: new Date("2020-12-10 10:30")},
-                {id: 50, begin_time : new Date("2020-12-10 9:10"), end_time: new Date("2020-12-10 10:30")}],
-        "王五" : [{id: 60, begin_time : new Date("2020-12-10 8:10"), end_time: new Date("2020-12-10 8:40")}],
-        "赵六" : [{id: 70, begin_time : new Date("2020-12-10 10:00"), end_time: new Date("2020-12-10 10:40")}],
+                {id: 50, begin_time : new Date("2020-12-10 9:10"), end_time: new Date("2020-12-10 10:30")},
+                {id: 60, begin_time : new Date("2020-12-10 9:10"), end_time: new Date("2020-12-10 10:30")}],
+        "王五" : [{id: 70, begin_time : new Date("2020-12-10 8:10"), end_time: new Date("2020-12-10 8:40")}],
+        "赵六" : [{id: 80, begin_time : new Date("2020-12-10 10:00"), end_time: new Date("2020-12-10 10:40")}],
       }
     }
   }, 
@@ -168,9 +170,6 @@ export default {
     this.bindBoxMove();//加载时间条鼠标按下事件
 
     this.bindDocumentUp();//加载document鼠标放开事件
-  },
-  updated(){
-    debugger;
   },
   methods : {
     bindDocumentUp : function() {
@@ -210,14 +209,39 @@ export default {
       var start = self.config.gantt.cols[self.config.gantt.cols.length - 1][xxx].start;
       var mapping_value = self.boxElement.getAttribute("mapping_value");
       var key_value = self.boxElement.getAttribute("key_value");
+      var boxTime = null;
+      var boxTimeIndex = null;
       self.timeDatas[mapping_value].forEach(time => {
         if(key_value == time[self.config.mapping.key_field]) {
+          boxTime = time;
           var timestart = time[self.config.mapping.start_field];
           time[self.config.mapping.end_field] = end;
           time[self.config.mapping.start_field] = start;
           
         }
+        boxTimeIndex++;
       });
+      var mappingValue = self.boxElement.getAttribute("mapping_value");
+      var sumY = 0;
+      for (var index in self.datas) {
+        var data = self.datas[index];
+        sumY += data.y;
+        var box_y = self.boxElement.y.baseVal.value;
+        var dy = sumY - box_y;
+        
+        if (dy > 0 && self.unit_height/2 >= dy && index < self.datas.length - 1) {
+          
+          for(var i in self.datas) {
+            if(mappingValue == self.datas[i][self.config.mapping.mapping_field]) {
+              self.datas[i].y = self.datas[i].y - self.unit_height;;
+              break;
+            }
+          }
+          self.timeDatas[data[self.config.mapping.mapping_field]].splice(boxTime, 1);
+          self.timeDatas[self.datas[parseInt(index)+1][self.config.mapping.mapping_field]].push(boxTime);
+          break;
+        }
+      }
     },
     bindBoxMove : function() {
       var self = this;
@@ -232,8 +256,9 @@ export default {
         element.onmousedown = function(e) {
           self.isboxDown = 1;
           self.boxElement = element;
+          
           self.boxX = e.layerX - element.x.baseVal.value;
-          self.boxY = e.layerY - element.y.baseVal.value;
+          self.boxY = e.offsetY - element.y.baseVal.value;
           self.direction = 0;
           var posx = e.pageX + self.$refs.gantt_right.scrollLeft - self.$refs.gantt_left.clientWidth - self.boxElement.x.baseVal.value;
           if (posx > 10) {
@@ -253,7 +278,7 @@ export default {
                 return;
               }
               self.boxElement.x.baseVal.value = e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX;
-              //self.boxElement.y.baseVal.value = e.clientY - gantt_right.offsetTop + scrollTop + self.boxY;
+              self.boxElement.y.baseVal.value = e.offsetY - gantt_right.offsetTop + scrollTop - self.boxY;
             }
           }
 
@@ -330,7 +355,7 @@ export default {
         data.y = 0;
         var times = self.timeDatas[data[self.config.mapping.mapping_field]];
         times.sort(function(a,b){
-          return a[self.config.mapping.start_field] < b.[self.config.mapping.start_field] ? -1 : 1;
+          return a[self.config.mapping.start_field] < b[self.config.mapping.start_field] ? -1 : 1;
         });
         var timea = 0;
 
@@ -364,7 +389,6 @@ export default {
         });
         i++;
       });
-      debugger;
     },
     bindRowHover: function() {
       var self = this;
@@ -436,7 +460,6 @@ export default {
     
     loadBackground: function() {
       if(this.background.indexOf(".") != -1) {
-        debugger;
         this.background = 'url('+ require('../assets/'+this.background) + ') no-repeat';
       }
     },
