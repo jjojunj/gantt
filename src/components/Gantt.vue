@@ -316,6 +316,7 @@ export default {
               console.info(JSON.stringify(self.timeDatas));
               self.timeDatas[mappingValue] = timeDatas;
               console.info(JSON.stringify(self.timeDatas));
+              
             }
           }
 
