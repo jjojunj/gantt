@@ -1,7 +1,6 @@
 <template>
 <div style="width:100%;height: 100%;position: relative;">
   <div style="width:100%;height:30px;position: relative;">
-    <button type="button" @click="test()" style="float:left;position: absolute;z-index:9999;">普通按钮</button>
   </div>
   <div class="gantt_container" ref="gantt_container" :style = "{background: background, color: color}">
     
@@ -55,7 +54,7 @@
             <template v-for="(data) in datas">
                 <svg v-for="(time, index) in timeDatas[data[config.mapping.mapping_field]]" :index="JSON.stringify(index)" :key="time.id" :mapping_value="data[config.mapping.mapping_field]"  
                   :x="JSON.stringify(time.left)" 
-                  :y="JSON.stringify(time.y = time.y ? time.y+0.5 : 1 )" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
+                  :y="JSON.stringify(time.y)" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
                   class="taskBox deSVGdrag taskBoxSVG" status="STATUS_ACTIVE" taskid="-1" :style="{fill: box_background}"
                   :name="'svg' + time[config.mapping.key_field]">
                   <rect x="0" y="0" width="100%" height="100%" class="taskLayout" rx="2" ry="2"></rect>
@@ -172,14 +171,6 @@ export default {
     this.bindDocumentUp();//加载document鼠标放开事件
   },
   methods : {
-    test : function() {
-      debugger;
-      var datas = this.timeDatas["李四"];
-      this.timeDatas["李四"] = [];
-      datas[0].left = 200;
-      this.$set(this.timeDatas, "李四", datas);
-      debugger;
-    },
     bindDocumentUp : function() {
       var self = this;
       document.body.onmouseup = function() {
@@ -300,7 +291,7 @@ export default {
               if(e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX <= 0 || e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX + self.boxElement.width.baseVal.value >=gantt_content_th_contrainer.clientWidth) {
                 return;
               }
-              //self.boxElement.x.baseVal.value = e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX;
+              self.boxElement.x.baseVal.value = e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX;
               //self.boxElement.y.baseVal.value = e.offsetY - gantt_right.offsetTop + scrollTop - self.boxY;
               var mappingValue = self.boxElement.getAttribute("mapping_value");
               var svg_index = self.boxElement.getAttribute("index");
@@ -316,7 +307,7 @@ export default {
               console.info(JSON.stringify(self.timeDatas));
               self.timeDatas[mappingValue] = timeDatas;
               console.info(JSON.stringify(self.timeDatas));
-              
+
             }
           }
 
