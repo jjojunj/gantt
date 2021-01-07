@@ -1,7 +1,7 @@
 <template>
 <div style="width:100%;height: 100%;position: relative;">
   <div style="width:100%;height:30px;position: relative;">
-    <button type="button" @click="loadTime()" style="float:left;position: absolute;z-index:9999;">普通按钮</button>
+    <button type="button" @click="test()" style="float:left;position: absolute;z-index:9999;">普通按钮</button>
   </div>
   <div class="gantt_container" ref="gantt_container" :style = "{background: background, color: color}">
     
@@ -53,7 +53,7 @@
           </svg>
           <svg version="1.1" class="ganttSVGBox" >
             <template v-for="(data) in datas">
-                <svg v-for="(time) in timeDatas[data[config.mapping.mapping_field]]" :key="time[config.mapping.key_field]" :mapping_value="data[config.mapping.mapping_field]"  
+                <svg v-for="(time, index) in timeDatas[data[config.mapping.mapping_field]]" :index="JSON.stringify(index)" :key="time.id" :mapping_value="data[config.mapping.mapping_field]"  
                   :x="JSON.stringify(time.left)" 
                   :y="JSON.stringify(time.y = time.y ? time.y+0.5 : 1 )" :width="JSON.stringify(time.width)" :height="unit_height-2" :key_value="time[config.mapping.key_field]"
                   class="taskBox deSVGdrag taskBoxSVG" status="STATUS_ACTIVE" taskid="-1" :style="{fill: box_background}"
@@ -172,6 +172,14 @@ export default {
     this.bindDocumentUp();//加载document鼠标放开事件
   },
   methods : {
+    test : function() {
+      debugger;
+      var datas = this.timeDatas["李四"];
+      this.timeDatas["李四"] = [];
+      datas[0].left = 200;
+      this.$set(this.timeDatas, "李四", datas);
+      debugger;
+    },
     bindDocumentUp : function() {
       var self = this;
       document.body.onmouseup = function() {
@@ -179,6 +187,10 @@ export default {
           //begin 同步时间
           self.syncTime();
           self.loadTime();
+           var mappingValue = self.boxElement.getAttribute("mapping_value");
+              var svg_index = self.boxElement.getAttribute("index");
+              var data = self.timeDatas[mappingValue][svg_index];
+              console.info("end" + data);
           //end
         }
         self.isboxDown = 0;
@@ -211,34 +223,45 @@ export default {
       var key_value = self.boxElement.getAttribute("key_value");
       var boxTime = null;
       var boxTimeIndex = null;
-      self.timeDatas[mapping_value].forEach(time => {
+      for(var boxTimeIndex = 0; boxTimeIndex < self.timeDatas[mapping_value].length; boxTimeIndex++) {
+        var time = self.timeDatas[mapping_value][boxTimeIndex];
         if(key_value == time[self.config.mapping.key_field]) {
           boxTime = time;
           var timestart = time[self.config.mapping.start_field];
           time[self.config.mapping.end_field] = end;
           time[self.config.mapping.start_field] = start;
-          
+          break;
         }
-        boxTimeIndex++;
-      });
+      }
+     
       var mappingValue = self.boxElement.getAttribute("mapping_value");
+      var svg_index = self.boxElement.getAttribute("index");
+      var box_y = self.boxElement.y.baseVal.value;
+
+      var times = self.timeDatas[mappingValue];
       var sumY = 0;
       for (var index in self.datas) {
         var data = self.datas[index];
         sumY += data.y;
-        var box_y = self.boxElement.y.baseVal.value;
-        var dy = sumY - box_y;
-        
-        if (dy > 0 && self.unit_height/2 >= dy && index < self.datas.length - 1) {
-          
-          for(var i in self.datas) {
-            if(mappingValue == self.datas[i][self.config.mapping.mapping_field]) {
-              self.datas[i].y = self.datas[i].y - self.unit_height;;
-              break;
-            }
+        var cy = box_y + self.unit_height - sumY;
+        if (cy >= self.unit_height/2 && cy < self.unit_height) {
+          //self.boxElement.y.baseVal.value = box_y-box_y%self.unit_height + self.unit_height;
+          var key = self.datas[parseInt(index)+1][self.config.mapping.mapping_field];
+          if (key == mappingValue) {
+            break;
           }
-          self.timeDatas[data[self.config.mapping.mapping_field]].splice(boxTime, 1);
-          self.timeDatas[self.datas[parseInt(index)+1][self.config.mapping.mapping_field]].push(boxTime);
+          self.timeDatas[key].push(times[svg_index]);
+          times.splice(svg_index, 1);
+          
+          break;
+        } else if ((cy <= self.unit_height/2 && cy >= 0) || (box_y + self.unit_height <= sumY)) {
+          //self.boxElement.y.baseVal.value = box_y-box_y%self.unit_height;
+          var key = self.datas[parseInt(index)][self.config.mapping.mapping_field];
+          if (key == mappingValue) {
+            break;
+          }
+          self.timeDatas[key].push(times[svg_index]);
+          times.splice(svg_index, 1);
           break;
         }
       }
@@ -277,8 +300,22 @@ export default {
               if(e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX <= 0 || e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX + self.boxElement.width.baseVal.value >=gantt_content_th_contrainer.clientWidth) {
                 return;
               }
-              self.boxElement.x.baseVal.value = e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX;
-              self.boxElement.y.baseVal.value = e.offsetY - gantt_right.offsetTop + scrollTop - self.boxY;
+              //self.boxElement.x.baseVal.value = e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX;
+              //self.boxElement.y.baseVal.value = e.offsetY - gantt_right.offsetTop + scrollTop - self.boxY;
+              var mappingValue = self.boxElement.getAttribute("mapping_value");
+              var svg_index = self.boxElement.getAttribute("index");
+
+
+              var dx = e.clientX - gantt_right.offsetLeft + scrollLeft - self.boxX;
+              var timeDatas = self.timeDatas[mappingValue];
+              self.timeDatas[mappingValue] = [];
+              var data = timeDatas[svg_index];
+              var dy = e.offsetY - gantt_right.offsetTop + scrollTop - self.boxY;
+              data.y = dy;
+              data.x = dx;
+              console.info(JSON.stringify(self.timeDatas));
+              self.timeDatas[mappingValue] = timeDatas;
+              console.info(JSON.stringify(self.timeDatas));
             }
           }
 
@@ -300,14 +337,11 @@ export default {
       if(self.boxElement.classList.contains("deSVGhand")) {
         var posx1 = e.pageX - self.$refs.gantt_left.clientWidth + self.$refs.gantt_right.scrollLeft - self.boxElement.x.baseVal.value - self.boxElement.width.baseVal.value;
         var posx2 = e.pageX - self.$refs.gantt_left.clientWidth + self.$refs.gantt_right.scrollLeft - self.boxElement.x.baseVal.value;
-        if(self.direction) {
-          
+        if(self.direction) { 
           self.boxElement.width.baseVal.value = self.boxElement.width.baseVal.value + posx1;
-        } else {
-          
+        } else { 
           self.boxElement.x.baseVal.value = self.boxElement.x.baseVal.value + posx2;
           self.boxElement.width.baseVal.value = self.boxElement.width.baseVal.value - posx2;
-          
         }
       } 
     },
@@ -324,7 +358,6 @@ export default {
           } else {
             var size = 0;
             var is = 0;
-            var u = 0;
             var cols = self.config.gantt.cols[self.config.gantt.cols.length -1];
             for(var u = 0; u < cols.length; u++) {
               var col = cols[u];
@@ -352,8 +385,11 @@ export default {
       var i = 1;
       var y = 0;
       self.datas.forEach(data => {
-        data.y = 0;
         var times = self.timeDatas[data[self.config.mapping.mapping_field]];
+        if (times.length == 0) {
+          y += data.y;
+          return;
+        }
         times.sort(function(a,b){
           return a[self.config.mapping.start_field] < b[self.config.mapping.start_field] ? -1 : 1;
         });
@@ -374,13 +410,15 @@ export default {
           if (timea) {
             if (timea > start) {
               data.y += self.unit_height;
+              self.$set(data,'y',data.y);
+              
               time.y = y;
               y += self.unit_height;
             } else {
               time.y = y - self.unit_height;
             }
           } else {
-            data.y = self.unit_height;
+            self.$set(data,'y',self.unit_height);
              
             time.y = y;
             y += data.y;
