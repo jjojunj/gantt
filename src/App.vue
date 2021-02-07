@@ -1,16 +1,44 @@
 <template>
   <div id="app">
-    <gantt/>
+    <gantt :unit_width="unit_width" :columns="columns" :start="start" :end="end"
+           :scales="scales" :template="template" :conflict="conflict" :start_field="start_field" :end_field="end_field"></gantt>
   </div>
 </template>
 
 
 <script>
-import Gantt from "./components/Gantt";
+import gantt from "./components/gantt";
 
 export default {
-  components: { Gantt },
-  name: "App"
+  components: { gantt },
+  name: "App",
+  data() {
+    return {
+      unit_width: 30,
+      columns : [
+        {
+          label: "司机",
+          field: "vehicle_name",
+          width: 120
+        },
+        {
+          label: "手机号码",
+          field: "mobile",
+          width: 150
+        }
+      ],
+      start: new Date("2020-12-10 08:00"),
+      end: new Date("2020-12-11 00:00"),
+      scales : [
+        {unit: 'minute',step: 30,format: 'dd号HH点mm'},
+        {unit: 'minute',step: 5},
+      ],
+      template : "name",
+      conflict: "line-feed",
+      start_field: "begin_time",
+      end_field: "end_time"
+    }
+  }
 };
 </script>
 
